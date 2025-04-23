@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import generics
+from .models import Planet
+from .serializers import PlanetSerializer
 
-# Create your views here.
+class PlanetListCreateView(generics.ListCreateAPIView):
+    queryset = Planet.objects.all().order_by('-created_at')
+    serializer_class = PlanetSerializer
