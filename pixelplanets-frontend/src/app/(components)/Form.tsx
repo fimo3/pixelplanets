@@ -7,6 +7,8 @@ type FormData = {
   seed: string
   terrain: string
   atmosphere_color: string
+  liquid_percent: number
+  liquid_color: string
 }
 
 type FormProps = {
@@ -19,6 +21,8 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
     seed: "",
     terrain: "rocky",
     atmosphere_color: "#77aadd",
+    liquid_percent: 30,
+    liquid_color: "#1E90FF",
   })
 
   const handleChange = (
@@ -26,6 +30,11 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }))
   }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -43,6 +52,7 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
           onChange={handleChange}
           value={formData.name}
           className="border w-full p-2 rounded"
+          required
         />
       </div>
 
@@ -54,6 +64,7 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
           onChange={handleChange}
           value={formData.seed}
           className="border w-full p-2 rounded"
+          required
         />
       </div>
 
@@ -68,7 +79,7 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
           <option value="rocky">Rocky</option>
           <option value="icy">Icy</option>
           <option value="gaseous">Gaseous</option>
-          <option value="dessert">Desert</option>
+          <option value="desert">Desert</option>
           <option value="jungle">Jungle</option>
         </select>
       </div>
@@ -80,6 +91,32 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
           type="color"
           onChange={handleChange}
           value={formData.atmosphere_color}
+          className="w-full h-10"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">
+          Liquid coverage: {formData.liquid_percent}%
+        </label>
+        <input
+          name="liquid_percent"
+          type="range"
+          min="0"
+          max="100"
+          onChange={handleNumberChange}
+          value={formData.liquid_percent}
+          className="w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Liquid color</label>
+        <input
+          name="liquid_color"
+          type="color"
+          onChange={handleChange}
+          value={formData.liquid_color}
           className="w-full h-10"
         />
       </div>
