@@ -1,8 +1,10 @@
 "use client"
-
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { fetchPlanets, createPlanet } from "../../lib/api"
 import Form from "./(components)/Form"
+import PlanetCanvas from "./(components)/PlanetCanvas"
+import logo from "../../public/Pixnet_logo.png"
 
 type Planet = {
   name: string
@@ -27,14 +29,15 @@ export default function Home() {
 
   return (
     <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">🪐 PixelPlanets</h1>
-
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-      >
-        Create Custom Planet
-      </button>
+      <div className="flex items-center justify-between">
+        <Image src={logo} alt="Pixnet logo" width={100} />
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+        >
+          Create Custom Planet
+        </button>
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -51,10 +54,18 @@ export default function Home() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {planets.map((planet) => (
-          <div key={planet.seed} className="p-4 bg-gray-100 rounded shadow">
-            <h2 className="font-semibold">{planet.name}</h2>
+          <div
+            key={planet.seed}
+            className="p-4 bg-gray-100 rounded shadow text-center"
+          >
+            <PlanetCanvas
+              seed={planet.seed}
+              color={planet.atmosphere_color}
+              terrain={planet.terrain}
+            />
+            <h2 className="font-semibold mt-2">{planet.name}</h2>
             <p>Terrain: {planet.terrain}</p>
             <p>
               Color:{" "}
