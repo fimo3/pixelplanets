@@ -6,6 +6,7 @@ type Props = {
   seed: string
   color: string
   terrain: string
+  land_color: string
   liquid_percent?: number
   liquid_color?: string
 }
@@ -14,6 +15,7 @@ export default function PlanetCanvas({
   seed,
   color,
   terrain,
+  land_color = "#888888",
   liquid_percent = 30,
   liquid_color = "#1E90FF",
 }: Props) {
@@ -55,6 +57,9 @@ export default function PlanetCanvas({
     // Generate terrain only once and cache it
     if (!terrainCache.current) {
       const imageData = ctx.createImageData(size, size)
+      const landRgb = hexToRgb(land_color)
+      const liquidRgb = hexToRgb(liquid_color)
+
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
           const dx = x - center.x
@@ -65,21 +70,20 @@ export default function PlanetCanvas({
 
           const n = noise.simplex2(x * config.scale, y * config.scale)
           let brightness = (n + 1) / 2
-          brightness = Math.pow(brightness, config.contrast * 1.5) // Enhanced contrast
+          brightness = Math.pow(brightness, config.contrast)
 
           const isLiquid = n < liquid_percent / 100 - 0.5
 
           const index = (y * size + x) * 4
           if (isLiquid) {
-            imageData.data[index] = parseInt(liquid_color.slice(1, 3), 16)
-            imageData.data[index + 1] = parseInt(liquid_color.slice(3, 5), 16)
-            imageData.data[index + 2] = parseInt(liquid_color.slice(5, 7), 16)
+            imageData.data[index] = liquidRgb.r
+            imageData.data[index + 1] = liquidRgb.g
+            imageData.data[index + 2] = liquidRgb.b
             imageData.data[index + 3] = 255
           } else {
-            const value = Math.floor(brightness * 255)
-            imageData.data[index] = value
-            imageData.data[index + 1] = value
-            imageData.data[index + 2] = value
+            imageData.data[index] = landRgb.r * brightness
+            imageData.data[index + 1] = landRgb.g * brightness
+            imageData.data[index + 2] = landRgb.b * brightness
             imageData.data[index + 3] = 255
           }
         }
@@ -90,22 +94,26 @@ export default function PlanetCanvas({
     const renderFrame = (frame: number) => {
       if (!ctx || !terrainCache.current) return
 
-      // 1. Clear and draw terrain
+      // Clear and draw terrain
       ctx.clearRect(0, 0, size, size)
       ctx.putImageData(terrainCache.current, 0, 0)
 
-      // 2. Draw VERY subtle clouds with transparency
-      const cloudScale = 0.04
-      const timeOffset = frame * 0.005 // Slow movement
+      // Cloud parameters - adjusted for larger clouds
+      const cloudScale = 0.03 // Smaller scale = bigger cloud formations
+      const cloudSpeed = 0.002
+      const cloudThreshold = 0.2 // Lower threshold = more expansive clouds
+      const timeOffset = frame * cloudSpeed
 
-      // Create temporary canvas for clouds
-      const tempCanvas = document.createElement("canvas")
-      tempCanvas.width = size
-      tempCanvas.height = size
-      const tempCtx = tempCanvas.getContext("2d")
-      if (!tempCtx) return
+      // Create cloud canvas
+      const cloudCanvas = document.createElement("canvas")
+      cloudCanvas.width = size
+      cloudCanvas.height = size
+      const cloudCtx = cloudCanvas.getContext("2d")
+      if (!cloudCtx) return
 
-      const cloudData = tempCtx.createImageData(size, size)
+      // Draw clouds with proper transparency
+      const cloudData = cloudCtx.createImageData(size, size)
+      const atmosphereRgb = hexToRgb(color)
 
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
@@ -113,35 +121,32 @@ export default function PlanetCanvas({
           const dy = y - center.y
           const dist = Math.sqrt(dx * dx + dy * dy)
 
-          if (dist > radius * 1.05) continue // Only slightly beyond planet edge
+          // Only draw clouds within planet bounds
+          if (dist > radius * 1.1) continue
 
+          // Generate cloud pattern with time-based animation
           const n = noise.simplex3(x * cloudScale, y * cloudScale, timeOffset)
 
-          // Only draw clouds where noise > threshold (0.3)
-          if (n > 0.3) {
+          // Only create clouds where noise exceeds threshold
+          if (n > cloudThreshold) {
             const index = (y * size + x) * 4
-            const opacity = Math.min((n - 0.3) * 0.8, 0.3) * 255 // Max 30% opacity
-
-            cloudData.data[index] = parseInt(color.slice(1, 3), 16)
-            cloudData.data[index + 1] = parseInt(color.slice(3, 5), 16)
-            cloudData.data[index + 2] = parseInt(color.slice(5, 7), 16)
-            cloudData.data[index + 3] = opacity
+            // Solid color with alpha handled by globalAlpha
+            cloudData.data[index] = atmosphereRgb.r
+            cloudData.data[index + 1] = atmosphereRgb.g
+            cloudData.data[index + 2] = atmosphereRgb.b
+            cloudData.data[index + 3] = 255
           }
         }
       }
-      tempCtx.putImageData(cloudData, 0, 0)
 
-      // Draw clouds with additional transparency
-      ctx.globalAlpha = 0.5
-      ctx.drawImage(tempCanvas, 0, 0)
+      cloudCtx.putImageData(cloudData, 0, 0)
+
+      // Draw clouds with consistent 50% opacity
+      ctx.globalAlpha = 0.8
+      ctx.drawImage(cloudCanvas, 0, 0)
       ctx.globalAlpha = 1.0
 
-      // 3. Minimal color overlay
-      ctx.fillStyle = color + "10" // 6% opacity
-      ctx.beginPath()
-      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2)
-      ctx.fill()
-
+      // Continue animation
       animationRef.current = requestAnimationFrame(() => {
         setAnimationFrame((prev) => prev + 1)
       })
@@ -154,7 +159,22 @@ export default function PlanetCanvas({
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [seed, color, terrain, liquid_percent, liquid_color, animationFrame])
+  }, [
+    seed,
+    color,
+    terrain,
+    land_color,
+    liquid_percent,
+    liquid_color,
+    animationFrame,
+  ])
+
+  function hexToRgb(hex: string) {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return { r, g, b }
+  }
 
   return (
     <canvas ref={canvasRef} width={96} height={96} className="rounded-full" />

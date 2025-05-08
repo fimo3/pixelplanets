@@ -24,6 +24,11 @@ class Planet(models.Model):
         default='#1E90FF',  # Dodger blue as default
         help_text="HEX color code for the liquid (e.g., #1E90FF)"
     )
+    land_color = models.CharField(
+        max_length=7,
+        default='#1E90FF',  # Dodger blue as default
+        help_text="HEX color code for the liquid (e.g., #1E90FF)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

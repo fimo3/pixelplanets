@@ -12,6 +12,7 @@ type Planet = {
   seed: string
   terrain: string
   atmosphere_color: string
+  land_color: string
   liquid_percent: number
   liquid_color: string
 }
@@ -49,10 +50,10 @@ export default function Home() {
               onClick={() => setIsModalOpen(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
             >
-              X
+              ✕
             </button>
             <h2 className="text-lg font-semibold mb-4">Create a New Planet</h2>
-            <Form onSubmit={handleSubmit} />
+            <Form onsubmit={handleSubmit} />
           </div>
         </div>
       )}
@@ -66,12 +67,19 @@ export default function Home() {
             <PlanetCanvas
               seed={planet.seed}
               color={planet.atmosphere_color}
+              land_color={planet.land_color}
               terrain={planet.terrain}
               liquid_percent={planet.liquid_percent}
               liquid_color={planet.liquid_color}
             />
             <h2 className="font-semibold mt-2">{planet.name}</h2>
             <p>Terrain: {planet.terrain}</p>
+            <p>
+              Terrain color:{" "}
+              <span style={{ color: planet.land_color }}>
+                {planet.land_color}
+              </span>
+            </p>
             <p>
               Atmosphere:{" "}
               <span style={{ color: planet.atmosphere_color }}>

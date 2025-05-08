@@ -7,20 +7,22 @@ type FormData = {
   seed: string
   terrain: string
   atmosphere_color: string
+  land_color: string
   liquid_percent: number
   liquid_color: string
 }
 
 type FormProps = {
-  onSubmit: (data: FormData) => void
+  onsubmit: (data: FormData) => void
 }
 
-const Form: React.FC<FormProps> = ({ onSubmit }) => {
+const Form: React.FC<FormProps> = ({ onsubmit }) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     seed: "",
     terrain: "rocky",
     atmosphere_color: "#77aadd",
+    land_color: "#888888", // Default terrain color
     liquid_percent: 30,
     liquid_color: "#1E90FF",
   })
@@ -39,7 +41,7 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    onSubmit(formData)
+    onsubmit(formData)
   }
 
   return (
@@ -91,6 +93,17 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
           type="color"
           onChange={handleChange}
           value={formData.atmosphere_color}
+          className="w-full h-10"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Terrain color</label>
+        <input
+          name="land_color"
+          type="color"
+          onChange={handleChange}
+          value={formData.land_color}
           className="w-full h-10"
         />
       </div>
