@@ -34,13 +34,7 @@ export default function Home() {
   return (
     <main className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <Image src={logo} alt="Pixnet logo" width={100} />
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-        >
-          Create Custom Planet
-        </button>
+        <button onClick={() => setIsModalOpen(true)}>+ New Planet</button>
       </div>
 
       {isModalOpen && (
